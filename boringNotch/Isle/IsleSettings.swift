@@ -14,6 +14,8 @@ extension Defaults.Keys {
     // MARK: Appearance
     /// Use Liquid Glass for the open island on macOS 26+. Falls back to black on older systems.
     static let isleLiquidGlass = Key<Bool>("isleLiquidGlass", default: true)
+    /// Black tint on the glass (0 = clear glass, 1 = black). 0.42 looked washed-out gray on a real Mac.
+    static let isleGlassTint = Key<Double>("isleGlassTint", default: 0.72)
     /// Glow tinted by the current album art color around the open island.
     static let isleAlbumGlow = Key<Bool>("isleAlbumGlow", default: true)
     /// Blur + scale transition when the island opens.

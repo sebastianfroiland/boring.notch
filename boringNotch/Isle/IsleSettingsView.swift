@@ -10,6 +10,8 @@ import Defaults
 import SwiftUI
 
 struct IsleSettings: View {
+    @Default(.isleLiquidGlass) private var liquidGlass
+    @Default(.isleGlassTint) private var glassTint
     @Default(.isleMenuBarShield) private var menuBarShield
     @Default(.isleMenuBarShieldClearance) private var clearance
     @Default(.isleCalendarLeadMinutes) private var leadMinutes
@@ -23,6 +25,16 @@ struct IsleSettings: View {
                     Text("Liquid Glass when open")
                 }
                 .disabled(!IsleGlass.isSupported)
+                if IsleGlass.isSupported && liquidGlass {
+                    Slider(value: $glassTint, in: 0.2...0.95, step: 0.01) {
+                        HStack {
+                            Text("Glass darkness")
+                            Spacer()
+                            Text("\(Int(glassTint * 100)) %")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
                 Defaults.Toggle(key: .isleAlbumGlow) {
                     Text("Glow from album color")
                 }

@@ -26,7 +26,6 @@ enum IsleGlass {
 
     /// How far below the notch the black band fades out.
     static let bandFade: CGFloat = 34
-    static let tintOpacity: Double = 0.42
 }
 
 // MARK: - Island background
@@ -38,6 +37,7 @@ struct IsleIslandBackground<S: Shape>: ViewModifier {
     let shape: S
     let notchHeight: CGFloat
     @Default(.isleLiquidGlass) private var liquidGlass
+    @Default(.isleGlassTint) private var glassTint
 
     func body(content: Content) -> some View {
         #if compiler(>=6.2)
@@ -49,7 +49,7 @@ struct IsleIslandBackground<S: Shape>: ViewModifier {
                     }
                     .background(Color.black.opacity(isOpen ? 0 : 1))
                     .glassEffect(
-                        isOpen ? Glass.regular.tint(.black.opacity(IsleGlass.tintOpacity)) : Glass.identity,
+                        isOpen ? Glass.regular.tint(.black.opacity(max(0, min(1, glassTint)))) : Glass.identity,
                         in: shape
                     )
             } else {

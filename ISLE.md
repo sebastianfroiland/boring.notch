@@ -7,7 +7,7 @@ synced into the Xcode target); a handful of existing files got small hooks.
 
 | Area | What | Where |
 | --- | --- | --- |
-| Liquid Glass | Open island uses `glassEffect(.regular.tint(.black.opacity(0.42)), in: notchShape)` on macOS 26+, with a black band (solid at notch height, fading out 34 pt below). Closed island stays black. Header/timer buttons use `.regular.interactive()`. Black fallback before macOS 26 or when built with Xcode < 26. | `IsleGlass.swift`, `ContentView.swift`, `BoringHeader.swift` |
+| Liquid Glass | Open island uses `glassEffect(.regular.tint(.black.opacity(t)), in: notchShape)` on macOS 26+ (t = "Glass darkness", default 0.72), with a black band (solid at notch height, fading out 34 pt below). Closed island stays black. Header/timer buttons use `.regular.interactive()`. Black fallback before macOS 26 or when built with Xcode < 26. | `IsleGlass.swift`, `ContentView.swift`, `BoringHeader.swift` |
 | Menu bar shield | In full screen, a HID-level `CGEventTap` clamps the y of mouse-moved/dragged events above the island to `clearance` pt below the edge, so the auto-hidden menu bar does not slide down. Never warps or detaches the pointer. Bypass: hold ⌘/⌥/fn, or push upward for ~1 s. Tap is only enabled while a full-screen space is visible, and is torn down on sleep, lock and quit. Needs Accessibility. | `MenuBarShield.swift` |
 | Calendar alerts | N min (default 10) before start and at start, using the calendars selected under Calendar. | `IsleMonitors.swift` |
 | Timer | Ring and remaining time around the closed notch, plus a Timer tab with presets, ±1 min, pause and cancel. | `IsleTimer.swift` |
