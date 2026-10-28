@@ -33,6 +33,9 @@ struct SettingsView: View {
                 NavigationLink(value: "Appearance") {
                     Label("Appearance", systemImage: "eye")
                 }
+                NavigationLink(value: "Island") {
+                    Label("Island", systemImage: "capsule.portrait")
+                }
                 NavigationLink(value: "Media") {
                     Label("Media", systemImage: "play.laptopcomputer")
                 }
@@ -75,6 +78,8 @@ struct SettingsView: View {
                     GeneralSettings()
                 case "Appearance":
                     Appearance()
+                case "Island":
+                    IsleSettings()
                 case "Media":
                     Media()
                 case "Calendar":

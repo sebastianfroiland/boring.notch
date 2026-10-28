@@ -5,19 +5,27 @@
 //  Created by Hugo Persson on 2024-08-25.
 //
 
+import Defaults
 import SwiftUI
 
 struct TabModel: Identifiable {
-    let id = UUID()
+    var id: String { label }
     let label: String
     let icon: String
     let view: NotchViews
 }
 
-let tabs = [
-    TabModel(label: "Home", icon: "house.fill", view: .home),
-    TabModel(label: "Shelf", icon: "tray.fill", view: .shelf)
-]
+/// Tabs shown in the open notch. Shelf and Timer follow their settings.
+var tabs: [TabModel] {
+    var result = [TabModel(label: "Home", icon: "house.fill", view: .home)]
+    if Defaults[.boringShelf] {
+        result.append(TabModel(label: "Shelf", icon: "tray.fill", view: .shelf))
+    }
+    if Defaults[.isleTimerEnabled] {
+        result.append(TabModel(label: "Timer", icon: "timer", view: .timer))
+    }
+    return result
+}
 
 struct TabSelectionView: View {
     @ObservedObject var coordinator = BoringViewCoordinator.shared

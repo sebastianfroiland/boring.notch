@@ -23,6 +23,8 @@ struct ContentView: View {
     @ObservedObject var batteryModel = BatteryStatusViewModel.shared
     @ObservedObject var brightnessManager = BrightnessManager.shared
     @ObservedObject var volumeManager = VolumeManager.shared
+    @ObservedObject var isleActivities = IsleActivityCenter.shared
+    @ObservedObject var isleTimer = IsleTimerManager.shared
     @State private var hoverTask: Task<Void, Never>?
     @State private var isHovering: Bool = false
     @State private var anyDropDebounceTask: Task<Void, Never>?
@@ -36,6 +38,11 @@ struct ContentView: View {
     @Default(.useMusicVisualizer) var useMusicVisualizer
 
     @Default(.showNotHumanFace) var showNotHumanFace
+
+    @Default(.isleHoverPeek) var isleHoverPeek
+    @Default(.isleAlbumGlow) var isleAlbumGlow
+    @Default(.isleBlurTransition) var isleBlurTransition
+    @Default(.isleTimerEnabled) var isleTimerEnabled
 
     // Shared interactive spring for movement/resizing to avoid conflicting animations
     private let animationSpring = Animation.interactiveSpring(response: 0.38, dampingFraction: 0.8, blendDuration: 0)
@@ -56,6 +63,17 @@ struct ContentView: View {
                 ? cornerRadiusInsets.opened.bottom
                 : cornerRadiusInsets.closed.bottom
         )
+    }
+
+    /// Closed island grows ~16x4 pt while hovered, before it opens.
+    private var isPeeking: Bool {
+        isleHoverPeek && isHovering && vm.notchState == .closed && !coordinator.helloAnimationRunning
+            && gestureProgress == 0
+    }
+
+    private var showsAlbumGlow: Bool {
+        isleAlbumGlow && vm.notchState == .open && coordinator.currentView == .home
+            && musicManager.isPlaying
     }
 
     private var computedChinWidth: CGFloat {
@@ -100,7 +118,13 @@ struct ContentView: View {
                         : cornerRadiusInsets.closed.bottom
                     )
                     .padding([.horizontal, .bottom], vm.notchState == .open ? 12 : 0)
-                    .background(.black)
+                    .padding(.horizontal, isPeeking ? 8 : 0)
+                    .padding(.bottom, isPeeking ? 4 : 0)
+                    .isleIslandBackground(
+                        isOpen: vm.notchState == .open,
+                        shape: currentNotchShape,
+                        notchHeight: vm.effectiveClosedNotchHeight
+                    )
                     .clipShape(currentNotchShape)
                     .overlay(alignment: .top) {
                         Rectangle()
@@ -112,6 +136,7 @@ struct ContentView: View {
                         color: ((vm.notchState == .open || isHovering) && Defaults[.enableShadow])
                             ? .black.opacity(0.7) : .clear, radius: Defaults[.cornerRadiusScaling] ? 6 : 4
                     )
+                    .isleAlbumGlow(color: musicManager.avgColor, active: showsAlbumGlow)
                     .padding(
                         .bottom,
                         vm.effectiveClosedNotchHeight == 0 ? 10 : 0
@@ -132,6 +157,7 @@ struct ContentView: View {
                         handleHover(hovering)
                     }
                     .onTapGesture {
+                        hoverTask?.cancel()
                         doOpen()
                     }
                     .conditionalModifier(Defaults[.enableGestures]) { view in
@@ -287,6 +313,12 @@ struct ContentView: View {
                       } else if coordinator.sneakPeek.show && Defaults[.inlineHUD] && (coordinator.sneakPeek.type != .music) && (coordinator.sneakPeek.type != .battery) && vm.notchState == .closed {
                           InlineHUD(type: $coordinator.sneakPeek.type, value: $coordinator.sneakPeek.value, icon: $coordinator.sneakPeek.icon, hoverAnimation: $isHovering, gestureProgress: $gestureProgress)
                               .transition(.opacity)
+                      } else if let activity = isleActivities.current, vm.notchState == .closed {
+                          IsleActivityView(activity: activity)
+                              .id(activity.id)
+                      } else if isleTimerEnabled && isleTimer.isActive && vm.notchState == .closed && !(coordinator.expandingView.show && coordinator.expandingView.type == .music) {
+                          IsleTimerLiveActivity()
+                              .transition(.blurReplace)
                       } else if (!coordinator.expandingView.show || coordinator.expandingView.type == .music) && vm.notchState == .closed && (musicManager.isPlaying || !musicManager.isPlayerIdle) && coordinator.musicLiveActivityEnabled && !vm.hideOnClosed {
                           MusicLiveActivity()
                               .frame(alignment: .center)
@@ -349,12 +381,16 @@ struct ContentView: View {
                         NotchHomeView(albumArtNamespace: albumArtNamespace)
                     case .shelf:
                         ShelfView()
+                    case .timer:
+                        IsleTimerView()
                     }
                 }
                 .transition(
-                    .scale(scale: 0.8, anchor: .top)
-                    .combined(with: .opacity)
-                    .animation(.smooth(duration: 0.35))
+                    isleBlurTransition
+                    ? AnyTransition.isleOpen
+                    : AnyTransition.scale(scale: 0.8, anchor: .top)
+                        .combined(with: .opacity)
+                        .animation(.smooth(duration: 0.35))
                 )
                 .zIndex(1)
                 .allowsHitTesting(vm.notchState == .open)

@@ -207,10 +207,10 @@ class BoringViewCoordinator: ObservableObject {
 
     func toggleSneakPeek(
         status: Bool, type: SneakContentType, duration: TimeInterval = 1.5, value: CGFloat = 0,
-        icon: String = ""
+        icon: String = "", force: Bool = false
     ) {
         sneakPeekDuration = duration
-        if type != .music {
+        if type != .music && !force {
             // close()
             if !Defaults[.hudReplacement] {
                 return

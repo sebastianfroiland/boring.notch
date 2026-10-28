@@ -82,6 +82,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             DistributedNotificationCenter.default().removeObserver(observer)
             screenUnlockedObserver = nil
         }
+        IsleServices.stop()
         MusicManager.shared.destroy()
         cleanupDragDetectors()
         cleanupWindows()
@@ -421,6 +422,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         setupDragDetectors()
+        IsleServices.start()
 
         if coordinator.firstLaunch {
             DispatchQueue.main.async {

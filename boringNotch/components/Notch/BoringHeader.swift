@@ -16,7 +16,8 @@ struct BoringHeader: View {
     var body: some View {
         HStack(spacing: 0) {
             HStack {
-                if (!tvm.isEmpty || coordinator.alwaysShowTabs) && Defaults[.boringShelf] {
+                if ((!tvm.isEmpty || coordinator.alwaysShowTabs) && Defaults[.boringShelf])
+                    || (Defaults[.isleTimerEnabled] && tabs.count > 1) {
                     TabSelectionView()
                 } else if vm.notchState == .open {
                     EmptyView()
@@ -46,15 +47,11 @@ struct BoringHeader: View {
                             Button(action: {
                                 vm.toggleCameraPreview()
                             }) {
-                                Capsule()
-                                    .fill(.black)
+                                Image(systemName: "web.camera")
+                                    .foregroundColor(.white)
+                                    .imageScale(.medium)
                                     .frame(width: 30, height: 30)
-                                    .overlay {
-                                        Image(systemName: "web.camera")
-                                            .foregroundColor(.white)
-                                            .padding()
-                                            .imageScale(.medium)
-                                    }
+                                    .isleGlassCapsule(fallback: .black)
                             }
                             .buttonStyle(PlainButtonStyle())
                         }
@@ -65,15 +62,11 @@ struct BoringHeader: View {
                                 }
                                 
                             }) {
-                                Capsule()
-                                    .fill(.black)
+                                Image(systemName: "gear")
+                                    .foregroundColor(.white)
+                                    .imageScale(.medium)
                                     .frame(width: 30, height: 30)
-                                    .overlay {
-                                        Image(systemName: "gear")
-                                            .foregroundColor(.white)
-                                            .padding()
-                                            .imageScale(.medium)
-                                    }
+                                    .isleGlassCapsule(fallback: .black)
                             }
                             .buttonStyle(PlainButtonStyle())
                         }

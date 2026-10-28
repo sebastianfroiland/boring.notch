@@ -15,6 +15,8 @@ final class FullscreenMediaDetector: ObservableObject {
     static let shared = FullscreenMediaDetector()
     
     @Published var fullscreenStatus: [String: Bool] = [:]
+    /// Every screen currently showing a full-screen space, regardless of the hide-notch setting.
+    @Published var anyFullscreenStatus: [String: Bool] = [:]
     
     private var monitorTask: Task<Void, Never>?
     
@@ -37,9 +39,11 @@ final class FullscreenMediaDetector: ObservableObject {
     
     private func updateStatus(with spaces: [MacroVisionKit.FullScreenMonitor.SpaceInfo]) {
         var newStatus: [String: Bool] = [:]
+        var anyStatus: [String: Bool] = [:]
         
         for space in spaces {
             if let uuid = space.screenUUID {
+                anyStatus[uuid] = true
                 let shouldDetect: Bool
                 if Defaults[.hideNotchOption] == .nowPlayingOnly, let musicSourceBundle = MusicManager.shared.bundleIdentifier  {
                     shouldDetect = space.runningApps.contains(musicSourceBundle)
@@ -51,6 +55,9 @@ final class FullscreenMediaDetector: ObservableObject {
         }
         
         self.fullscreenStatus = newStatus
+        if self.anyFullscreenStatus != anyStatus {
+            self.anyFullscreenStatus = anyStatus
+        }
     }
 }
 
